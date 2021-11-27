@@ -1,0 +1,7 @@
+function samdir_gui_graficarExcitacionTono(axes, excitacion)
+    cmap = hsv(length(excitacion));
+   for i=1:length(excitacion),
+       plot(axes, excitacion(i).timeVector, excitacion(i).timeData,);
+       hold(axes, 'on')
+   end
+end

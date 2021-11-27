@@ -1,0 +1,10 @@
+function samdir_gui_graficarIRmasVentana(axes, ir_mod, ventana)
+
+   plot(axes,ir_mod.timeVector,ir_mod.timeData,'c',ventana.timeVector,ventana.timeData,'--r','LineWidth',1.5);
+   samdir_gui_confAxTop(axes);
+   set(GUI.axTop2,'XLim', ir_mod.timeVector([1 end]));
+   set(GUI.axTop2,'YLim', [-1.2 1.2]);
+   %     set(get(GUI.axTop2,'XLabel'),'String','seg.');
+   set(get(GUI.axTop2,'YLabel'),'String','Amplitud');
+   set(get(GUI.axTop2,'Title'),'String',ir_mod.comment, 'Color','w', 'FontWeigh', 'bold' );
+end

@@ -1,0 +1,56 @@
+%****************************************************************************************
+%*   SISTEMA AUTOMÁTICO DE MEDICIÓN DE DIRECTIVIDAD DE TRANSDUCTORES ELECTROACÚSTICOS   * 
+%****************************************************************************************
+%* Nombre del Archivo:  samdir_reset_mec.m                                              *                                                  
+%* Autores:             Morales, Juan Ignacio - Moreno, Ana María                       *
+%*                      Proyecto Final de Grado                                         *
+%*                      Ingeniería Electrónica - UTN-FRC - Argentina                    *
+%* Entidad:             Centro de Investigación y Transferencia en Acústica (CINTRA)    *
+%****************************************************************************************
+%   Resetea el sistema, llevándolo a la posición 0°. Esto se realiza 
+%   mediante 4 sensores ubicados en las posiciones:
+%   
+%   sen_1   0°, 
+%   sen_2   90°,
+%   sen_3   180°,
+%   sen_4   270°. 
+%   
+%   Cuando la plataforma se mueve por algunas de estas
+%   posiciones, se elige el camino más corto para llegar a 0°.
+%
+function varargout = samdir_reset_mec(varargin)
+
+pic = samdir_usb();
+fopen(pic);
+
+sens = samdir_comunicacion(pic,'f',1);
+% Configura el sentido horario
+sent_ok = samdir_comunicacion(pic,'c',1);
+% Mueve la plataforma de a un paso hasta que se active un sensor
+while (sens == 0)
+    mov_ok = samdir_comunicacion(pic,'d',1);
+    sens = samdir_comunicacion(pic,'f',1);
+end
+
+% De acuerdo al sensor activado, se efectúa el movimiento más corto
+switch (sens)
+    case {2}
+        sent_ok = samdir_comunicacion(pic,'c',0);
+        mov_ok = samdir_comunicacion(pic,'d',50);
+    
+    case {3}
+        sent_ok = samdir_comunicacion(pic,'c',0);
+        mov_ok = samdir_comunicacion(pic,'d',100);
+
+    case {4}
+        sent_ok = samdir_comunicacion(pic,'c',1);
+        mov_ok = samdir_comunicacion(pic,'d',50);
+        
+end
+
+fprintf('\n La mesa está en 0°.');
+
+fclose(pic);
+delete (pic);
+clear pic
+end

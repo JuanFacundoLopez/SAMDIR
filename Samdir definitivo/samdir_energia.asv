@@ -1,0 +1,53 @@
+%****************************************************************************************
+%*   SISTEMA AUTOMÁTICO DE MEDICIÓN DE DIRECTIVIDAD DE TRANSDUCTORES ELECTROACÚSTICOS   * 
+%****************************************************************************************
+%* Nombre del Archivo:  samdir_energia.m                                                *                                                  
+%* Autores:             Morales, Juan Ignacio - Moreno, Ana María                       *
+%*                      Proyecto Final de Grado                                         *
+%*                      Ingeniería Electrónica - UTN-FRC - Argentina                    *
+%* Entidad:             Centro de Investigación y Transferencia en Acústica (CINTRA)    *
+%****************************************************************************************
+%%
+function varargout = samdir_energia(varargin)
+%   samdir_potencia_bandas - Calcula la energía de la señal ingresada
+%   como argumento, luego realiza el gráfico con el eje de abcisas en dB.
+%
+%   Sintaxis: samdir_energia(samdirAudio)
+%
+%% Variables Globales
+
+
+%% Inicialización
+audioObj    = varargin{1};
+energia     = audioObj.timeData.^2;
+xVec = audioObj.timeVector;
+
+% Busca el maximo valor en Y, normaliza y pasa a dB
+yMax         = max(energia);    
+energia_norm = energia/yMax;
+energia_db   = db(energia_norm);
+
+% Busca el mínimo valor en db, y si es menor que -100dB pone ese límite
+yMin         = min(energia_db);  
+if yMin < -100
+     yLim = [-100 5];
+else
+     yLim = [yMin-10 5];
+end
+
+for i=1:length(energia),
+    if energia_db < -100
+end
+
+%% Gráfica
+h = plot(xVec, energia_db);
+xlabel('seg');
+ylabel('dB');
+set(gca,'XLim', xVec([1 end]));
+set(gca,'YLim', yLim);
+grid on
+audioObj.comment = ['Energía - ' audioObj.comment];
+title(audioObj.comment);
+set(gcf,'Name', audioObj.comment);
+
+end

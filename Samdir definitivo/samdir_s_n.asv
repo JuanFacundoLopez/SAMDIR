@@ -1,0 +1,73 @@
+%****************************************************************************************
+%*   SISTEMA AUTOMÁTICO DE MEDICIÓN DE DIRECTIVIDAD DE TRANSDUCTORES ELECTROACÚSTICOS   * 
+%****************************************************************************************
+%* Nombre del Archivo:  samdir_s_n.m                                                    *                                    
+%* Autores:             Morales, Juan Ignacio - Moreno, Ana María                       *
+%*                      Proyecto Final de Grado                                         *
+%*                      Ingeniería Electrónica - UTN-FRC - Argentina                    *
+%* Entidad:             Centro de Investigación y Transferencia en Acústica (CINTRA)    *
+%****************************************************************************************
+%%
+function varargout = samdir_s_n(varargin)
+%   samdir_s_n - Mide la relación señal ruido del sistema de medición,
+%   grabando primero una señal de muestra y luego el ruido.
+%   Utiliza filtros estandar para calcular la potencia por banda de octava
+%   de cada señal y devuelve la relación señal/ruido en dB del sistema.
+%
+%   Sintaxis: valor_s_n = samdir_s_n()
+%   
+%   a = samdir_s_n()
+%   
+%% Variables globales
+f0      = 22;
+f1      = 22000;
+fs      = 48000;
+fft_d   = 16;
+nivel   = 0;
+
+%% Generación de la señal de excitación y grabación
+senal = samdir_generate('expsweep',[f0 f1],fs,fft_d);
+amp   = samdir_nivel(nivel);
+senal.timeData   = senal.timeData.*amp;
+senal = samdir_ventaneo('hann',0.05,0.05,senal);
+senal_grab       = samdir_reproduce_graba(senal);
+
+% Avisa si los niveles son muy altos
+nivel_grab      = max(abs(senal_grab.timeData));
+if (nivel_grab > 0.9)
+    fprintf ('\nNivel de grabación muy alto: %f', nivel_grab);
+end
+
+%% Grabación del ruido
+ruido_grab      = samdir_graba(3);
+% Selecciono la misma longitud
+ruido_grab.timeData     = ruido_grab.timeData(end-(2^fft_d)+1:1:end);
+
+% Creación de los filtros
+[filtros, frec_nominal] = samdir_banco_filtros(1,6);
+% Filtrado y calculo de densidad de potencia espectral señal grabada
+[pot, pot_dB]= samdir_potencia_bandas(filtros, senal_grab);
+
+% Gráfico de barras por octavas
+figure (1)
+samdir_plot_barras (pot_dB,frec_nominal);
+title('Potencia espectral de señal excitación')
+xlabel('Frecuencia [Hz]');
+ylabel('Potencia [dB]');
+
+% Filtrado y calculo de densidad de potencia espectral ruido grabado
+[pot_r, pot_dB_r]= samdir_potencia_bandas(filtros, senal_grab);
+
+% Gráfico de barras por octavas
+figure (1)
+samdir_plot_barras (pot_dB_r,frec_nominal);
+title('Potencia espectral de ruido')
+xlabel('Frecuencia [Hz]');
+ylabel('Potencia [dB]');
+
+%% Relación señal/ruido obtenida
+S_N = pot_dB - pot_dB_r;
+varargout(1) = {S_N};
+varargout(2) = {nivel_grab}; %Este valor puede utilizarse para realizar un vúmetro
+plot (tono_grab.timeData)
+end

@@ -1,0 +1,36 @@
+function samdir_gui_VerVentanaCallback(h,e, GUI)
+modoGUI = true;    
+%ir = samdirAudio();
+% [x, Fs] = wavread('IR_sucia');
+% ir.samplingRate = Fs;
+% ir.timeData = x;
+% ir.comment = 'Respuesta al Impulso';
+    ir =  getappdata(0,'ir');
+    samdir_logMensajes(GUI.jLogPanel, 'IR + Ventana');
+    izq_rec = str2double(get(GUI.izq_rec,'String')); %0.02
+    der_rec = str2double(get(GUI.der_rec,'String')); %0.1
+    val = get(GUI.tipoVentana1,'Value');
+    maps = get(GUI.tipoVentana1,'String');
+    tipo_1 = maps{val};
+    izq = str2double(get(GUI.ventanaIzq,'String')); %0.1
+    val = get(GUI.tipoVentana2,'Value');
+    maps = get(GUI.tipoVentana2,'String');
+    tipo_2 = maps{val};
+    der = str2double(get(GUI.ventanaDer,'String')); %0.1
+    GUI.handles.controller.modificacionIRVentana
+    [ir_mod,vent,datos]= samdir_ventaneo_ver(ir,izq_rec,der_rec,tipo_1,izq,tipo_2,der, modoGUI, GUI.jLogPanel);
+    
+    %% Visualización de IR modificada y Ventana a aplicar
+    plot(GUI.axTop2,ir_mod.timeVector,ir_mod.timeData,'c',vent.timeVector,vent.timeData,'--r','LineWidth',1.5);
+    
+    samdir_gui_confAxTop(GUI.axTop2);
+    set(GUI.axTop2,'XLim', ir_mod.timeVector([1 end]));
+    set(GUI.axTop2,'YLim', [-1.2 1.2]);
+    set(get(GUI.axTop2,'XLabel'),'String','seg.');
+    set(get(GUI.axTop2,'YLabel'),'String','Amplitud');
+    set(get(GUI.axTop2,'Title'),'String',ir_mod.comment, 'Color','w', 'FontWeigh', 'bold' );
+   
+    setappdata(0,'ir_mod', ir_mod);
+    setappdata(0,'vent', vent);
+    setappdata(0,'datos', datos);
+end

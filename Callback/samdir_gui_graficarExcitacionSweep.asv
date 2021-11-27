@@ -1,0 +1,5 @@
+function samdir_gui_graficarExcitacionSweep(GUI)
+
+   figure;
+   plot(GUI.excitacion.timeVector, GUI.excitacion.timeData)
+end

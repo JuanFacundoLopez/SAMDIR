@@ -1,0 +1,13 @@
+function samdir_gui_aplicarInterpolacionCallback(h,e, GUI)
+
+        index_selected = get(GUI.tipoInterpCombo,'Value');
+        maps = get(GUI.tipoInterpCombo,'String');
+        tipoInterpolacion = maps{index_selected};
+        index_selected = get(GUI.resInterpCombo,'Value');
+        if(index_selected == 3)
+            index_selected = 5;
+        end
+            
+        samdir_logMensajes(GUI.jLogPanel, strcat('Aplicar interpolacion',' ',tipoInterpolacion,' ','con resolucion',' ' ,num2str(index_selected)));
+        
+end

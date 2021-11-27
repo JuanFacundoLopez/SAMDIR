@@ -1,0 +1,154 @@
+%***************************************************************************************
+%*   SISTEMA AUTOMÁTICO DE MEDICIÓN DE DIRECTIVIDAD DE TRANSDUCTORES ELECTROACÚSTICOS  * 
+%***************************************************************************************
+%* Nombre del Archivo:  samdir_directividad.m                                          *
+%* Autores:             Morales, Juan Ignacio - Moreno, Ana María                      *
+%*                      Proyecto Final de Grado                                        *
+%*                      Ingeniería Electrónica - UTN-FRC - Argentina                   *
+%* Entidad:             Centro de Investigación y Transferencia en Acústica (CINTRA)   *
+%***************************************************************************************/
+%% 
+function varargout = samdir_directividad(varargin)
+%   samdir_directividad - Realiza la medicion de IR en distintos ángulos y 
+%   luego obtiene el diagrama polar. Los ángulos de inicio y final son
+%   tomados de la GUI, al igual que la resolución angular.
+%
+%   Sintaxis: struct samdirAudio = samdir_directividad(samdirAudio)
+%
+%   ir = samdir_directividad(excitacion);
+%
+%% Inicialización de variables
+% Variables globales
+modo = false;
+giro = 0;
+excitacion  = varargin{1}; 
+ang1        = varargin{2};
+ang2        = varargin{3};
+res         = varargin{4};
+if(nargin == 5)
+   modo   = true;
+   logger = varargin{5};
+   orden_filtro    = set_preferencias('ordenFiltro');
+   banda           = set_preferencias('resolucionFiltro');
+   switch banda
+       case '1/1 Octava'
+            bandas_octava   = 1;
+       case '1/3 Octava'
+           bandas_octava   = 3;
+   end
+   f0      = set_preferencias('freqInicial');
+   f1      = set_preferencias('freqFinal');
+   
+else
+    orden_filtro    = 6;
+    bandas_octava   = 1;
+    f0      = 22;
+    f1      = 22000;
+end
+
+%% Cálculo de la cantidad de ensayos a realizar
+% El rango de los ángulos es [0;360], limitado por la GUI
+if (ang1 > ang2)
+    num1    = (360 - ang1)/res;
+    num2    = ang2/res;
+    num     = num1 + num2;
+else if (ang2 > ang1)
+        num     = (ang2 - ang1)/res;
+    else
+        if(modo)
+            samdir_logMensajes(logger,'Ingrese una distancia angular válida');
+        else
+            fprintf('\nIngrese una distancia angular válida.\n');
+            % Sale de la función
+            return
+        end
+    end
+end
+% Si se realiza un giro completo, se repite la primer medición para cerrar
+% el diagrama polar
+if (ang1==0 && ang2==360)
+    giro    = 1;  
+    num     = 360/res;
+else
+    num     = num+1;
+end
+
+%% Movimiento del motor
+% Inicialización del struct destino de las grabaciones y las IR
+struct_grab(num)= samdirAudio;
+struct_ir(num)  = samdirAudio;
+struct_ir_vent(num)  = samdirAudio;
+
+% Realización de los ensayos y el movimiento
+if(modo)
+    struct_grab     = samdir_medicion_directividad(excitacion,num, logger);
+else
+    struct_grab     = samdir_medicion_directividad(excitacion,num);
+end
+if(giro == 1)
+    struct_grab(num+1) = struct_grab(1);
+end
+%% Post-procesamiento
+if (modo)
+    samdir_logMensajes(logger,'Procesamiento de las señales obtenidas');
+else
+    fprintf('\nProcesamiento de las señales obtenidas.\n');
+end
+
+% Creación del filtro inverso
+inv     = samdir_inverso(excitacion,[f0 f1]);
+tic
+% Deconvoluciones
+for i=1:num,
+    struct_ir(i) = samdir_deconv_lineal_FFT(struct_grab(i),inv);
+end
+toc
+% Se ventanea cada IR con los parámetros de la GUI
+% for i=1:num,
+%     struct_ir_vent(i) = samdir_ventaneo_aplicar(struct_ir,vent,vector)
+% end
+
+% Se rellena con ceros si es necesario
+tic
+% Se realiza el cálculo de la potencia por banda con los filtros de la GUI
+if (modo)
+    samdir_logMensajes(logger,'Creación de los filtros');
+else
+    fprintf('\nCreación de los filtros.\n');
+end
+% Creación de los filtros
+[filtros, frec_nominal] = samdir_banco_filtros(bandas_octava,orden_filtro);
+
+% Matrices que contendran el valor de potencia/banda de frecuencia
+pot     = zeros (num,length(frec_nominal));
+pot_db  = zeros (num,length(frec_nominal));
+
+if (modo)
+    samdir_logMensajes(logger,'Aplicación de los filtros');
+else
+    fprintf('\nAplicación de los filtros.\n');
+end
+
+% Filtrado y calculo de potencia por bandas de las IR
+for i=1:num,
+    [pot(i,:), pot_db(i,:)]= samdir_potencia_bandas_2(filtros, struct_ir(i));
+end
+toc
+tic
+% Se toma la primer medición como referencia
+pot_db_ref = zeros (num,length(frec_nominal));
+for i=1:num,
+    pot_db_ref(i,:)= pot_db(i,:) - pot_db(1,:);
+end
+
+% Se realiza el ploteo de la directividad. La función dirplot() realiza el
+% gráfico desde -180 a 180, por lo que es necesario reacomodar los valores.
+ %[theta, rho] = samdir_plot_directividad(pot_db_ref,frec_nominal);
+toc
+% Se guarda las IRs si es seleccionado en la GUI
+ varargout(1) = {struct_ir};
+ varargout(2) = {pot_db};
+ varargout(3) = {pot_db_ref};
+ varargout(4) = {frec_nominal};
+
+ end

@@ -1,0 +1,40 @@
+%****************************************************************************************
+%*   SISTEMA AUTOMÁTICO DE MEDICIÓN DE DIRECTIVIDAD DE TRANSDUCTORES ELECTROACÚSTICOS   * 
+%****************************************************************************************
+%* Nombre del Archivo:  samdir_prueba_mec.m                                             *                                                  
+%* Autores:             Morales, Juan Ignacio - Moreno, Ana María                       *
+%*                      Proyecto Final de Grado                                         *
+%*                      Ingeniería Electrónica - UTN-FRC - Argentina                    *
+%* Entidad:             Centro de Investigación y Transferencia en Acústica (CINTRA)    *
+%****************************************************************************************
+%   samdir_prueba_mec - Realiza mediante software una prueba mecánica del 
+%   sistema para asegurarse que se pueda controlar el transductor sin
+%   fallar en la resolución. Para eso mueve el transductor 90 grados en
+%   sentido horario y luego la misma cantidad en sentido antihorario. 
+%   Antes debe ubicar en 0º la plataforma.
+%
+%   samdir_prueba_mec(pic)
+%
+function varargout = samdir_prueba_mec(varargin)
+%% Inicialización
+pic     = varargin{1}; 
+
+%% Inicio de la prueba
+% Primero pregunta si la prueba se ha realizado 
+test_ok = samdir_comunicacion(pic,'b',1);
+
+if (test_ok)
+    fprintf('\n La prueba mecánica ya se ha realizado');
+else
+    % Resetea volviendo a la posición 0º
+    samdir_reset_mec(pic);
+    % Manda la orden de iniciar el test
+    test_tx = samdir_comunicacion(pic,'g',1);
+    test_ok = samdir_comunicacion(pic,'b',1);
+end
+
+if (test_ok)
+    fprintf('\n Prueba mecánica exitosa');
+else
+    
+end

@@ -1,0 +1,21 @@
+function TriggerCallback(src, evt, app)
+   
+%%% Get action command string  
+   % actionCommand = src.getActionCommand();
+%%% Read in serialized hashmap
+    hashMap = app.ReadObject();
+    
+%%% Convert hashmap to MATLAB structure     
+    data = Hash2Struct(hashMap);
+    data.duracion = str2num(data.duracion);
+    
+    
+   % set_preferencias('usuario', data.usuario);
+    set_preferencias(data);
+    
+%%% Display data in MATLAB dialog box
+    msg = ['Usuario: ' char(hashMap.get('usuario')) ', ' ...
+        'Equipos: ' num2str(hashMap.get('equipos')) ', ' 'Comentarios: ' char(hashMap.get('comentario'))];
+    uiwait(helpdlg(msg, 'Form Details'));
+    
+end

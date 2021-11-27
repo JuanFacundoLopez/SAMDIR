@@ -1,0 +1,6 @@
+function samdir_gui_aplicarMovimientoMotorCallback(h,e,GUI)
+    
+    angulo = get(GUI.anguloText, 'String');
+    samdir_logMensajes(GUI.jLogPanel, 'Movernos hasta.. ', angulo);
+
+end

@@ -1,0 +1,43 @@
+%****************************************************************************************
+%*   SISTEMA AUTOMÁTICO DE MEDICIÓN DE DIRECTIVIDAD DE TRANSDUCTORES ELECTROACÚSTICOS   * 
+%****************************************************************************************
+%* Nombre del Archivo:  samdir_usb.m                                                    *                                                  
+%* Autores:             Morales, Juan Ignacio - Moreno, Ana María                       *
+%*                      Proyecto Final de Grado                                         *
+%*                      Ingeniería Electrónica - UTN-FRC - Argentina                    *
+%* Entidad:             Centro de Investigación y Transferencia en Acústica (CINTRA)    *
+%****************************************************************************************
+%   samdir_usb - La clase USB CDC emula una conexión RS232 y lo muestra
+%   como un puerto COM en Windows. Esta función crea el objeto serial para
+%   establecer la comunicación, y lo devuelve como argumento.
+%
+%   Sintaxis: objeto_serial = samdir_usb()
+%
+%   pic = samdir_usb()
+%
+function varargout = samdir_usb(varargin)
+
+% Esta instrucción busca los dispositivos seriales existentes
+serialInfo = instrhwinfo('serial');
+
+% Si la PC cuenta con puerto serial físico, se identificará como COM1. El
+% puerto emulado tendrá un número mayor, entonces para identificarlo:
+if(~isempty(serialInfo.AvailableSerialPorts))
+    if length(serialInfo.AvailableSerialPorts)>1
+
+        puerto = serialInfo.AvailableSerialPorts(2);
+    else
+        puerto = serialInfo.AvailableSerialPorts(1);
+    end
+    pic = serial(puerto,'BaudRate',9600,'DataBits',8);
+    set(pic,'Parity','none','StopBits',1,'FlowControl','none');
+    fopen(pic);
+else
+    pic = 0;
+end
+% Luego se crea el objeto serial con las características determinadas por
+% el firmware del uC: 9600 baudios, 8 bits de datos, 1 bit de paridad, 
+% sin control de flujo  
+	
+varargout(1) = {pic};
+end

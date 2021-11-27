@@ -1,0 +1,4 @@
+function samdir_gui_conectarMotorCallback(h,e,GUI)
+
+        
+end

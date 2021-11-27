@@ -1,0 +1,32 @@
+%***************************************************************************************
+%*   SISTEMA AUTOMÁTICO DE MEDICIÓN DE DIRECTIVIDAD DE TRANSDUCTORES ELECTROACÚSTICOS  * 
+%***************************************************************************************
+%* Nombre del Archivo:  Directividad.m                                                 *
+%* Autores:             Morales, Juan Ignacio - Moreno, Ana María                      *
+%*                      Proyecto Final de Grado                                        *
+%*                      Ingeniería Electrónica - UTN-FRC - Argentina                   *
+%* Entidad:             Centro de Investigación y Transferencia en Acústica (CINTRA)   *
+%***************************************************************************************/
+%% 
+function varargout = samdir_directividad(varargin)
+%   samdir_directividad - Realiza la medicion de IR en distintos ángulos y 
+%   luego obtiene el diagrama polar
+%
+%   Sintaxis: samdirAudio = samdir_medicion_ir(samdirAudio)
+%
+%   ir = samdir_medicion_ir(excitacion)
+%
+% Variables globales
+orden_filtro    = 6;
+bandas_octava   = 3;
+fs      = 48000;
+res     = 90;       % Resolución del ensayo
+num     = 360/res;  % Cantidad de ensayos
+
+
+% Inicialización del struct destino de las IR
+struct_ir(num) = samdirAudio;
+
+for i=1:num,
+    struct_ir(i) = samdir_medicion_ir(excitacion);
+end

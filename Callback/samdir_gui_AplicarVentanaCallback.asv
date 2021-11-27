@@ -1,0 +1,16 @@
+function samdir_gui_AplicarVentanaCallback(h,e, GUI)
+    
+    GUI.handles.controller.aplicarVentanaIR();
+    
+    jTabGroup = getappdata(handle(GUI.hTabGroup),'JTabbedPane');
+    jTabGroup.setEnabledAt(2,true);
+    set(GUI.hTabGroup, 'SelectedTab', GUI.tab(3));
+    GUI.handles.controller.aplicarVentanaIR();
+    set(GUI.guardarButton,'visible',1);
+    set(GUI.respuestaEnFrecuenciaButton,'visible',1);
+    set(GUI.energiaButton,'visible',1);
+
+    samdir_logMensajes(GUI.jLogPanel, 'Ventaneo aplicado');
+    
+end
+
